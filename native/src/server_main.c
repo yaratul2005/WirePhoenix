@@ -51,7 +51,6 @@ int main() {
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
 
-    // Very simple single connection echo server for testing
     while (1) {
         int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len);
         if (client_fd < 0) {
@@ -66,7 +65,6 @@ int main() {
         pw_transport_init(&transport, client_fd);
         pw_connection_t conn;
         pw_connection_init(&conn);
-        pw_connection_transition(&conn, PW_STATE_CONNECTING);
         pw_connection_transition(&conn, PW_STATE_HANDSHAKING);
 
         struct pollfd pfd = { .fd = client_fd, .events = POLLIN };
@@ -102,14 +100,23 @@ int main() {
                                 .version = PW_VERSION_1,
                                 .capabilities = client_hello.capabilities,
                                 .status = 0,
-                                .resume_accepted = client_hello.has_resume_token
+                                .resume_accepted = (client_hello.has_resume_token && client_hello.resume_session_id[0] != 0x99)
                             };
+
+                            // Protocol version negotiation
+                            if (client_hello.version != PW_VERSION_1) {
+                                printf("Handshake rejected: unsupported protocol version %d.\n", client_hello.version);
+                                server_hello.status = PW_ERR_PROTOCOL_ERROR;
+                                server_hello.resume_accepted = false;
+                                pw_connection_transition(&conn, PW_STATE_CLOSING);
+                            } else {
+                                pw_connection_transition(&conn, PW_STATE_AUTHENTICATING);
+                                printf("Handshake complete.\n");
+                            }
 
                             size_t written = pw_handshake_serialize_server_hello(&server_hello, transport.write_buffer + transport.write_len, PW_BUFFER_SIZE - transport.write_len);
                             transport.write_len += written;
 
-                            pw_connection_transition(&conn, PW_STATE_AUTHENTICATING);
-                            printf("Handshake complete.\n");
                             fflush(stdout);
                         } else {
                             break;

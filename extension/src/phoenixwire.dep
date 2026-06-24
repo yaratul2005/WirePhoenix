@@ -88,4 +88,6 @@ src/phoenixwire.lo: /app/extension/src/phoenixwire.c config.h \
  /usr/include/php/20230831/main/php_ini.h \
  /usr/include/php/20230831/ext/standard/info.h \
  /app/extension/src/php_phoenixwire.h \
- /usr/include/php/20230831/Zend/zend_exceptions.h
+ /usr/include/php/20230831/Zend/zend_exceptions.h \
+ /app/native/include/pw_connection.h /app/native/include/phoenixwire.h \
+ /app/native/include/pw_transport.h /app/native/include/pw_connection.h

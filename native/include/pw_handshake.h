@@ -37,7 +37,7 @@ typedef struct {
     uint32_t capabilities;
     uint8_t server_nonce[PW_NONCE_SIZE];
     uint8_t session_id[PW_SESSION_ID_SIZE];
-    uint8_t status; /* 0 = OK, non-zero = error code */
+    uint16_t status; /* 0 = OK, non-zero = error code */
 
     /* Session Resume Extension */
     bool resume_accepted;

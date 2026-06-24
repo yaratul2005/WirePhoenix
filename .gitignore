@@ -4,3 +4,4 @@ pw_server
 pw_client
 *.log
 test_integration
+test_soak

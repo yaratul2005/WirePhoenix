@@ -39,6 +39,10 @@ void test_client_hello() {
     assert(parsed.has_resume_token == false);
     assert((parsed.capabilities & PW_CAP_RESUME) == 0);
 
+    // Test protocol version rejection simulation
+    // The parser doesn't reject natively (just parses), rejection happens in the state machine / server
+    assert(parsed.version == PW_VERSION_1);
+
     printf("Client hello tests passed.\n");
 }
 

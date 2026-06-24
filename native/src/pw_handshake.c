@@ -17,6 +17,15 @@ static uint32_t read_u32_be(const uint8_t* buf) {
            ((uint32_t)buf[3]);
 }
 
+static void write_u16_be(uint8_t* buf, uint16_t val) {
+    buf[0] = (val >> 8) & 0xFF;
+    buf[1] = val & 0xFF;
+}
+
+static uint16_t read_u16_be(const uint8_t* buf) {
+    return ((uint16_t)buf[0] << 8) | ((uint16_t)buf[1]);
+}
+
 size_t pw_handshake_serialize_client_hello(const pw_client_hello_t* hello, uint8_t* buffer, size_t buffer_len) {
     size_t required = 2 + 1 + 4 + PW_NONCE_SIZE + 1; /* +1 for resume flag */
     if (hello->has_resume_token) {
@@ -80,7 +89,7 @@ size_t pw_handshake_parse_client_hello(const uint8_t* buffer, size_t buffer_len,
 }
 
 size_t pw_handshake_serialize_server_hello(const pw_server_hello_t* hello, uint8_t* buffer, size_t buffer_len) {
-    size_t required = 2 + 1 + 4 + PW_NONCE_SIZE + PW_SESSION_ID_SIZE + 1 + 1;
+    size_t required = 2 + 1 + 4 + PW_NONCE_SIZE + PW_SESSION_ID_SIZE + 2 + 1;
     if (buffer_len < required) return 0;
 
     size_t offset = 0;
@@ -97,14 +106,16 @@ size_t pw_handshake_serialize_server_hello(const pw_server_hello_t* hello, uint8
     memcpy(buffer + offset, hello->session_id, PW_SESSION_ID_SIZE);
     offset += PW_SESSION_ID_SIZE;
 
-    buffer[offset++] = hello->status;
+    write_u16_be(buffer + offset, hello->status);
+    offset += 2;
+
     buffer[offset++] = hello->resume_accepted ? 1 : 0;
 
     return offset;
 }
 
 size_t pw_handshake_parse_server_hello(const uint8_t* buffer, size_t buffer_len, pw_server_hello_t* out_hello) {
-    size_t required = 2 + 1 + 4 + PW_NONCE_SIZE + PW_SESSION_ID_SIZE + 1 + 1;
+    size_t required = 2 + 1 + 4 + PW_NONCE_SIZE + PW_SESSION_ID_SIZE + 2 + 1;
     if (buffer_len < required) return 0;
 
     size_t offset = 0;
@@ -121,7 +132,9 @@ size_t pw_handshake_parse_server_hello(const uint8_t* buffer, size_t buffer_len,
     memcpy(out_hello->session_id, buffer + offset, PW_SESSION_ID_SIZE);
     offset += PW_SESSION_ID_SIZE;
 
-    out_hello->status = buffer[offset++];
+    out_hello->status = read_u16_be(buffer + offset);
+    offset += 2;
+
     out_hello->resume_accepted = (buffer[offset++] == 1);
 
     return offset;
