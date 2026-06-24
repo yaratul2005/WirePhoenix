@@ -15,6 +15,7 @@ extern "C" {
 #define PW_CAP_MULTIPLEXING   0x02
 #define PW_CAP_AUTH_BEARER    0x04
 #define PW_CAP_AUTH_HMAC      0x08
+#define PW_CAP_RESUME         0x10
 
 #define PW_NONCE_SIZE 16
 #define PW_SESSION_ID_SIZE 16
@@ -24,7 +25,10 @@ typedef struct {
     uint8_t version;
     uint32_t capabilities;
     uint8_t client_nonce[PW_NONCE_SIZE];
-    /* For simplicity in this iteration, optional auth tokens are omitted or handled out-of-band/via separate frame */
+
+    /* Session Resume Extension */
+    bool has_resume_token;
+    uint8_t resume_session_id[PW_SESSION_ID_SIZE];
 } pw_client_hello_t;
 
 typedef struct {
@@ -34,6 +38,9 @@ typedef struct {
     uint8_t server_nonce[PW_NONCE_SIZE];
     uint8_t session_id[PW_SESSION_ID_SIZE];
     uint8_t status; /* 0 = OK, non-zero = error code */
+
+    /* Session Resume Extension */
+    bool resume_accepted;
 } pw_server_hello_t;
 
 /**

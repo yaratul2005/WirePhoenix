@@ -19,11 +19,18 @@ size_t pw_varint_decode32(const uint8_t* buffer, size_t max_len, uint32_t* out_v
         uint8_t byte = buffer[i++];
         result |= (uint32_t)(byte & 0x7F) << shift;
         if ((byte & 0x80) == 0) {
+            /* If this is the 5th byte, the top 4 bits must be 0 to fit in 32 bits.
+               Wait, 4 bytes * 7 bits = 28 bits. The 5th byte provides 4 bits.
+               If byte & 0xF0 != 0, it overflows a 32-bit uint. */
+            if (i == 5 && (byte & 0xF0) != 0) {
+                return 0; /* Overflow error */
+            }
             *out_value = result;
             return i;
         }
         shift += 7;
     }
 
-    return 0; /* Error: buffer too short or varint too long */
+    /* Reached end of max_len without finding terminal byte, OR exceeded 5 bytes without terminating. */
+    return 0;
 }

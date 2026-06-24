@@ -5,7 +5,7 @@ LDFLAGS =
 SRC_DIR = native/src
 TEST_DIR = native/tests
 
-SRCS = $(wildcard $(SRC_DIR)/*.c)
+SRCS = $(filter-out $(SRC_DIR)/client_main.c $(SRC_DIR)/server_main.c, $(wildcard $(SRC_DIR)/*.c))
 OBJS = $(SRCS:.c=.o)
 
 TEST_SRCS = $(wildcard $(TEST_DIR)/*.c)
@@ -29,3 +29,14 @@ test: $(TEST_BINS)
 
 clean:
 	rm -f $(OBJS) $(TEST_BINS)
+
+pw_server: native/src/server_main.c $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+pw_client: native/src/client_main.c $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+clean_bin:
+	rm -f pw_server pw_client
+
+all: pw_server pw_client

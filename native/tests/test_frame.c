@@ -1,5 +1,5 @@
-#include "pw_varint.h"
 #include "pw_frame.h"
+#include "pw_varint.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -13,11 +13,17 @@ void test_varint() {
     size_t read = pw_varint_decode32(buffer, written, &decoded);
     assert(read == written);
     assert(decoded == 300);
+
+    // Overflow test (5 bytes, but msb of 5th byte is 1)
+    uint8_t overflow_buf[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0x10}; // 0x10 is 00010000, > 0x0F
+    assert(pw_varint_decode32(overflow_buf, 5, &decoded) == 0);
+
     printf("Varint tests passed.\n");
 }
 
 void test_frame_serialize_parse() {
     pw_frame_t frame;
+    frame.version = PW_VERSION_1;
     frame.flags = PW_FLAG_FIN;
     frame.opcode = PW_OPCODE_DATA_BINARY;
     frame.stream_id = 42;
@@ -35,7 +41,15 @@ void test_frame_serialize_parse() {
     assert(parsed_frame.stream_id == 42);
     assert(parsed_frame.length == 1024);
     assert(parsed_frame.magic[0] == PW_MAGIC_BYTE_1);
+    assert(parsed_frame.magic[1] == PW_MAGIC_BYTE_2);
     assert(parsed_frame.version == PW_VERSION_1);
+
+    // Partial read test
+    assert(pw_frame_parse_header(buffer, written - 1, &parsed_frame) == 0);
+
+    // Invalid magic test
+    buffer[0] = 0x00;
+    assert(pw_frame_parse_header(buffer, written, &parsed_frame) == (size_t)-1);
 
     printf("Frame tests passed.\n");
 }
