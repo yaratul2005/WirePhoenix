@@ -5,3 +5,4 @@ pw_client
 *.log
 test_integration
 test_soak
+test_chaos

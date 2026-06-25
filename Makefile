@@ -40,3 +40,10 @@ clean_bin:
 	rm -f pw_server pw_client
 
 all: pw_server pw_client
+
+test_chaos: native/tests/test_chaos.c $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+test_all: test test_chaos
+	@echo "Running test_chaos..."
+	@./test_chaos
