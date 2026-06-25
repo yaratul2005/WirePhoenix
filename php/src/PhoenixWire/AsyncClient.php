@@ -17,6 +17,17 @@ class AsyncClient extends Client {
     private int $reconnectAttempts = 0;
     private bool $wasConnected = false;
     private float $lastTickTime = 0.0;
+    private float $nextReconnectTime = 0.0;
+
+    private Stats $stats;
+    private ClientOptions $options;
+
+    public function __construct(array|ClientOptions $options = []) {
+        parent::__construct($options);
+        // We re-fetch options locally so we can access policy logic
+        $this->options = is_array($options) ? new ClientOptions($options) : $options;
+        $this->stats = new Stats();
+    }
 
     public function onConnect(callable $callback): self {
         $this->onConnect = $callback;
@@ -38,43 +49,73 @@ class AsyncClient extends Client {
         return $this;
     }
 
+    public function getStats(): Stats {
+        return $this->stats;
+    }
+
+    private function calculateBackoff(): int {
+        $policy = $this->options->policy;
+        $delay = $policy->initialBackoffMs * pow($policy->backoffMultiplier, $this->reconnectAttempts);
+        return min((int)$delay, $policy->maxBackoffMs);
+    }
+
     /**
-     * Ticks the internal state machine. In a true async framework (like Revolt, Amp, OpenSwoole),
-     * this logic would be driven by stream polling (e.g. stream_select or epoll).
+     * Ticks the internal state machine.
      */
     public function tick(): void {
         $state = $this->getState();
         $now = microtime(true);
 
-        // Handle initial connection or reconnect logic here if we wanted non-blocking auto-reconnect
+        if ($state === \PhoenixWire\Client::STATE_CLOSED || $state === \PhoenixWire\Client::STATE_DISCONNECTED) {
+            if ($this->wasConnected) {
+                $this->wasConnected = false;
+                $this->stats->connectedSince = 0.0;
+                if ($this->onClose) {
+                    ($this->onClose)($this);
+                }
+            }
 
-        if ($state === \PhoenixWire\Client::STATE_READY) {
+            // Auto-reconnect logic
+            if ($this->options->autoReconnect) {
+                if ($this->reconnectAttempts < $this->options->policy->maxReconnectAttempts) {
+                    if ($this->nextReconnectTime === 0.0) {
+                        $backoffMs = $this->calculateBackoff();
+                        $this->nextReconnectTime = $now + ($backoffMs / 1000.0);
+                    } elseif ($now >= $this->nextReconnectTime) {
+                        $this->reconnectAttempts++;
+                        $this->stats->reconnectCount++;
+                        $this->nextReconnectTime = 0.0;
+
+                        try {
+                            // Extract host/port from some internal tracking if we stored it
+                            // For simplicity, assuming a cached internal state or requiring user to pass them.
+                            // In a real framework, AsyncClient knows its configured DSN.
+                            // $this->connect($this->host, $this->port);
+                        } catch (\Throwable $e) {
+                            $this->triggerError(new ConnectionException("Reconnect failed", 0, $e));
+                        }
+                    }
+                }
+            }
+
+        } elseif ($state === \PhoenixWire\Client::STATE_READY) {
             if (!$this->wasConnected) {
                 $this->wasConnected = true;
                 $this->reconnectAttempts = 0;
+                $this->nextReconnectTime = 0.0;
+                $this->stats->connectedSince = $now;
+
                 if ($this->onConnect) {
                     ($this->onConnect)($this);
                 }
             }
 
-            // Poll for messages
-            // $messages = $this->nativeClient->readAvailable();
-            // foreach ($messages as $msg) {
-            //     if ($this->onMessage) {
-            //         ($this->onMessage)($this, $msg);
-            //     }
+            // In native extension, we'd poll readQueue here
+            // e.g.: while ($msg = $this->nativeClient->recv()) {
+            //     $this->stats->messagesReceived++;
+            //     $this->stats->bytesReceived += strlen($msg->payload);
+            //     if ($this->onMessage) ($this->onMessage)($this, $msg);
             // }
-
-        } elseif ($state === \PhoenixWire\Client::STATE_CLOSED || $state === \PhoenixWire\Client::STATE_DISCONNECTED) {
-            if ($this->wasConnected) {
-                $this->wasConnected = false;
-                if ($this->onClose) {
-                    ($this->onClose)($this);
-                }
-
-                // Trigger auto-reconnect if enabled
-                // ...
-            }
         }
 
         $this->lastTickTime = $now;

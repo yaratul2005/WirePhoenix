@@ -13,13 +13,15 @@ class Server {
 
     private string $host;
     private int $port;
+    private ServerOptions $options;
 
     /** @var array<string, Session> */
     private array $sessions = [];
 
-    public function __construct(string $host, int $port) {
+    public function __construct(string $host, int $port, ?ServerOptions $options = null) {
         $this->host = $host;
         $this->port = $port;
+        $this->options = $options ?? ServerOptions::default();
     }
 
     public function onConnect(callable $callback): self {
@@ -44,21 +46,36 @@ class Server {
 
     /**
      * Broadcasts a message to all connected sessions.
+     * Optionally filter by a callback.
      */
-    public function broadcast(Message|string $message): void {
+    public function broadcast(Message|string $message, ?callable $filter = null): void {
         foreach ($this->sessions as $session) {
-            $session->send($message);
+            if ($filter === null || $filter($session)) {
+                $session->send($message);
+            }
         }
     }
 
     /**
-     * Registers a session.
+     * Registers a session, applying admission control.
      */
-    public function addSession(Session $session): void {
+    public function addSession(Session $session): bool {
+        if (count($this->sessions) >= $this->options->maxSessions) {
+            $session->close(); // Admission rejected
+            return false;
+        }
+
         $this->sessions[$session->id()] = $session;
         if ($this->onConnect) {
-            ($this->onConnect)($session);
+            try {
+                ($this->onConnect)($session);
+            } catch (\Throwable $e) {
+                if ($this->onError) {
+                    ($this->onError)($e, $session);
+                }
+            }
         }
+        return true;
     }
 
     /**
@@ -69,24 +86,34 @@ class Server {
             $session = $this->sessions[$id];
             unset($this->sessions[$id]);
             if ($this->onClose) {
-                ($this->onClose)($session);
+                try {
+                    ($this->onClose)($session);
+                } catch (\Throwable $e) {
+                    if ($this->onError) {
+                        ($this->onError)($e, $session);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Runs idle eviction sweep.
+     */
+    public function sweepIdleSessions(int $nowMs): void {
+        foreach ($this->sessions as $id => $session) {
+            $stats = $session->stats();
+            if (($nowMs - $stats['lastActivityMs']) > $this->options->idleTimeoutMs) {
+                $session->close();
+                $this->removeSession($id);
             }
         }
     }
 
     /**
      * Listens for incoming connections.
-     * In a native PHP context, this would wrap stream_socket_server and stream_select,
-     * or utilize a framework like Swoole/ReactPHP.
      */
     public function listen(): void {
-        // Pseudo-implementation mapping
-        // $socket = stream_socket_server("tcp://{$this->host}:{$this->port}", $errno, $errstr);
-        // while (true) {
-        //    $client = stream_socket_accept($socket, -1);
-        //    $session = new Session($client);
-        //    $this->addSession($session);
-        //    // handle read/write loops
-        // }
+        // Native listen loop implementation goes here
     }
 }

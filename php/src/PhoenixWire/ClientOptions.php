@@ -10,7 +10,10 @@ class ClientOptions {
     public int $maxFrameSize = 1048576; // 1MB
     public ?string $bearerToken = null;
 
+    public Policy $policy;
+
     public function __construct(array $options = []) {
+        $this->policy = Policy::default();
         $this->timeouts = Timeouts::default();
         foreach ($options as $key => $value) {
             if (property_exists($this, $key)) {

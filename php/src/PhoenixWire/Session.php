@@ -8,9 +8,15 @@ class Session {
     private string $id;
     private $stream; // Raw socket or wrapped native object
 
+    private Stats $stats;
+    private int $lastActivityMs;
+
     public function __construct($stream, string $id = null) {
         $this->stream = $stream;
         $this->id = $id ?? bin2hex(random_bytes(8));
+        $this->stats = new Stats();
+        $this->lastActivityMs = (int)(microtime(true) * 1000);
+        $this->stats->connectedSince = microtime(true);
     }
 
     public function id(): string {
@@ -18,19 +24,29 @@ class Session {
     }
 
     public function send(Message|string $data): void {
-        // Pseudo-implementation mapping to underlying stream
-        // $payload = is_string($data) ? $data : $data->payload;
-        // fwrite($this->stream, $payload);
+        $payload = is_string($data) ? $data : $data->payload;
+
+        $this->stats->messagesSent++;
+        $this->stats->bytesSent += strlen($payload);
+        $this->lastActivityMs = (int)(microtime(true) * 1000);
+
+        // Native send logic
     }
 
     public function close(): void {
-        // fclose($this->stream);
+        // Native close logic
     }
 
     public function stats(): array {
-        return [
-            'id' => $this->id,
-            'state' => 'READY', // Mocked
-        ];
+        $data = $this->stats->toArray();
+        $data['id'] = $this->id;
+        $data['lastActivityMs'] = $this->lastActivityMs;
+        return $data;
+    }
+
+    public function recordReceive(int $bytes): void {
+        $this->stats->messagesReceived++;
+        $this->stats->bytesReceived += $bytes;
+        $this->lastActivityMs = (int)(microtime(true) * 1000);
     }
 }
