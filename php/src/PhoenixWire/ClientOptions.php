@@ -2,7 +2,7 @@
 namespace PhoenixWire;
 
 class ClientOptions {
-    public int $timeoutMs = 5000;
+    public \PhoenixWire\Timeouts $timeouts;
     public bool $autoReconnect = true;
     public int $maxReconnectAttempts = 5;
     public bool $enableResume = true;
@@ -11,6 +11,7 @@ class ClientOptions {
     public ?string $bearerToken = null;
 
     public function __construct(array $options = []) {
+        $this->timeouts = Timeouts::default();
         foreach ($options as $key => $value) {
             if (property_exists($this, $key)) {
                 $this->$key = $value;
