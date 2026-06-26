@@ -32,3 +32,8 @@ This document tracks the architectural history and development phases of the Pho
 - Included the "Phoenix" logo (`RDP (1).png`) into `assets/phoenix-logo.png`.
 - Added required ownership credits to the primary documentation.
 - Created this `work.md` file to formally track the architectural timeline and satisfy the logging constraint.
+## Phase 6: Composer & Pure-PHP Fallback Client
+- Packaged the PHP API into a standard Composer library with PSR-4 autoloading (`phoenixwire/phoenixwire`).
+- Implemented `PhoenixWire\StreamClient`, a pure-PHP client utilizing `stream_socket_client` and binary packing (`pack`/`unpack`) to emulate the C core codec perfectly.
+- Introduced `PhoenixWire\ClientFactory` allowing transparent fallback between the native C extension (preferred) and the pure-PHP stream client.
+- Wrote the `docs/deploy.md` guide covering dedicated servers and shared-hosting architectures via hosted daemon connections.
