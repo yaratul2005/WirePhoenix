@@ -37,3 +37,8 @@ This document tracks the architectural history and development phases of the Pho
 - Implemented `PhoenixWire\StreamClient`, a pure-PHP client utilizing `stream_socket_client` and binary packing (`pack`/`unpack`) to emulate the C core codec perfectly.
 - Introduced `PhoenixWire\ClientFactory` allowing transparent fallback between the native C extension (preferred) and the pure-PHP stream client.
 - Wrote the `docs/deploy.md` guide covering dedicated servers and shared-hosting architectures via hosted daemon connections.
+## Phase 7: Deployment Hardening & Feature Parity
+- Documented `TLS` behavior mapping and security handling on pure PHP Fallback `StreamClient`.
+- Clarified feature parity explicitly in `docs/deploy.md` comparing connection setup, TLS, and multiplexing capabilities between `ext-phoenixwire` and `StreamClient`.
+- Integrated `ClientOptions` changes handling `use_tls` enabling `stream_context_create()` underlying `tls://` upgrade.
+- Deployed shared-host integration tests mapping `StreamClient` to the standalone native daemon daemon validating fallback architecture.

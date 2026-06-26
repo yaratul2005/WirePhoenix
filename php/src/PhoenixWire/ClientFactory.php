@@ -13,7 +13,7 @@ class ClientFactory {
      * @return Client|StreamClient
      */
     public static function create($options = []) {
-        if (extension_loaded('phoenixwire')) {
+        if (extension_loaded('phoenixwire') && !isset($options['force_pure_php'])) {
             return new Client($options);
         }
 

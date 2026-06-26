@@ -9,6 +9,7 @@ class ClientOptions {
     public int $heartbeatIntervalMs = 30000;
     public int $maxFrameSize = 1048576; // 1MB
     public ?string $bearerToken = null;
+    public bool $useTls = false;
 
     public Policy $policy;
 
@@ -19,6 +20,14 @@ class ClientOptions {
             if (property_exists($this, $key)) {
                 $this->$key = $value;
             }
+        }
+
+        // Handle snake_case alternatives for usability
+        if (isset($options['auth_token']) && $this->bearerToken === null) {
+            $this->bearerToken = $options['auth_token'];
+        }
+        if (isset($options['use_tls'])) {
+            $this->useTls = (bool)$options['use_tls'];
         }
     }
 }
