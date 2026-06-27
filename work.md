@@ -52,3 +52,5 @@ This document tracks the architectural history and development phases of the Pho
 - Added captions explaining RTL (Right-to-Left) behavior and real-time frontend responses in the testing environment.
 ## Phase 10: Production Readiness Review
 - Imported the `Production Readiness Checklist` to `docs/production_readiness.md` and marked all milestones as complete, certifying that PhoenixWire is ready for production.
+## Phase 11: End-to-End Validation
+- Completed `docs/end_to_end_validation.md` documenting the proof that the full production path (TLS, handshake, auth, resume, message exchange, reconnect, metrics, and shutdown) is reliable across native and pure-PHP environments.
