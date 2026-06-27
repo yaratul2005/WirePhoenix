@@ -42,3 +42,7 @@ This document tracks the architectural history and development phases of the Pho
 - Clarified feature parity explicitly in `docs/deploy.md` comparing connection setup, TLS, and multiplexing capabilities between `ext-phoenixwire` and `StreamClient`.
 - Integrated `ClientOptions` changes handling `use_tls` enabling `stream_context_create()` underlying `tls://` upgrade.
 - Deployed shared-host integration tests mapping `StreamClient` to the standalone native daemon daemon validating fallback architecture.
+## Phase 8: Benchmarking & Security Hardening
+- Secured the Pure-PHP `StreamClient` TLS implementation by enforcing `verify_peer` and `verify_peer_name` in the stream context options.
+- Authored `tools/compare_benchmark.php` to provide developers a clear throughput measurement tool comparing Native vs PHP implementations.
+- Added `docs/compatibility_benchmarks.md` officially documenting the performance matrix and support tables across deployment environments.
