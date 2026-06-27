@@ -47,6 +47,8 @@ class StreamClient {
         $context = stream_context_create();
         if ($this->options->useTls) {
             stream_context_set_option($context, 'ssl', 'crypto_method', STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT);
+            stream_context_set_option($context, 'ssl', 'verify_peer', true);
+            stream_context_set_option($context, 'ssl', 'verify_peer_name', true);
         }
 
         $this->stream = stream_socket_client($address, $errno, $errstr, 5.0, STREAM_CLIENT_CONNECT, $context);
