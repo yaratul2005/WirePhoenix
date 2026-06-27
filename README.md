@@ -4,6 +4,15 @@
 
 # PhoenixWire Transport
 
+
+<div align="center">
+  <img src="https://img.shields.io/badge/PHP-7.4+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP Version" />
+  <img src="https://img.shields.io/badge/C++-11+-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++ Standard" />
+  <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge" alt="Build Status" />
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
+</div>
+
+
 **PhoenixWire is a custom, high-performance real-time transport protocol and PHP extension for applications that need lower overhead than WebSocket and do not require browser interoperability.**
 
 Designed for server-to-server, mobile, IoT, gaming, and internal application traffic, PhoenixWire focuses on compact framing, predictable latency, and native integration.
@@ -28,6 +37,25 @@ PhoenixWire bridges the gap between raw TCP sockets and heavyweight application 
 - Browser compatibility (no RFC 6455 drop-in replacement).
 - Human-readable wire format by default.
 - Pure PHP implementation of the transport core.
+
+---
+
+
+## 🖥️ Frontend & Test Environment
+
+The `YasersFrontTest` branch includes a dynamic test environment frontend with multiple users and responsive features. Below are screenshots demonstrating the UI, including Right-to-Left (RTL) behavior and dynamic responses.
+
+<div align="center">
+  <figure>
+    <img src="assets/Screenshot (94).png" alt="Frontend Test Environment - Main UI" width="800" />
+    <figcaption><b>Figure 1:</b> Dynamic frontend responses showing live chat activity with multiple users in the YasersFrontTest branch.</figcaption>
+  </figure>
+  <br>
+  <figure>
+    <img src="assets/Screenshot (95).png" alt="Frontend Test Environment - RTL and Dynamic Responses" width="800" />
+    <figcaption><b>Figure 2:</b> Demonstration of Right-to-Left (RTL) behavior and real-time dynamic responses handling.</figcaption>
+  </figure>
+</div>
 
 ---
 
