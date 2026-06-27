@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhoenixWire Chat</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🔥</span>
+                    <span class="logo-text">PhoenixWire</span>
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <div class="avatar" id="userAvatar"></div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-status" id="userStatus">Offline</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Online Users</h3>
+                <div class="users-list" id="usersList">
+                    <div class="no-users">No users online</div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button id="connectBtn" class="btn btn-primary">Connect</button>
+                <button id="disconnectBtn" class="btn btn-danger" disabled>Disconnect</button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-content">
+            <div class="chat-header">
+                <h1>Phoenix Chat Room</h1>
+                <div class="connection-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="connectionText">Disconnected</span>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message">
+                    <div class="welcome-icon">🔥</div>
+                    <h2>Welcome to PhoenixWire Chat</h2>
+                    <p>Click "Connect" to join the conversation</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Type a message..." 
+                    disabled
+                >
+                <button id="sendBtn" class="btn btn-send" disabled>Send</button>
+            </div>
+        </div>
+
+        <!-- Stats Panel -->
+        <div class="stats-panel">
+            <div class="stat-item">
+                <div class="stat-label">Messages Sent</div>
+                <div class="stat-value" id="statSent">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Messages Received</div>
+                <div class="stat-value" id="statReceived">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Online Users</div>
+                <div class="stat-value" id="statUsers">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Connection Time</div>
+                <div class="stat-value" id="statTime">00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Dialog -->
+    <div class="modal" id="connectionModal">
+        <div class="modal-content">
+            <h2>Connect to Server</h2>
+            <div class="form-group">
+                <label for="hostInput">Host:</label>
+                <input type="text" id="hostInput" value="127.0.0.1">
+            </div>
+            <div class="form-group">
+                <label for="portInput">Port:</label>
+                <input type="number" id="portInput" value="8080" min="1" max="65535">
+            </div>
+            <div class="form-group">
+                <label for="usernameInput">Username (optional):</label>
+                <input type="text" id="usernameInput" placeholder="Leave empty for random">
+            </div>
+            <div class="modal-buttons">
+                <button id="modalConnectBtn" class="btn btn-primary">Connect</button>
+                <button id="modalCancelBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast toast-error"></div>
+    <div id="successToast" class="toast toast-success"></div>
+
+    <script src="chat-client.js"></script>
+</body>
+</html>
